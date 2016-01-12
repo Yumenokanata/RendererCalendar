@@ -1,0 +1,33 @@
+<resources>
+    <declare-styleable name="CalendarViewAttr">
+        <attr name="scrollable" format="boolean"/>
+
+        <attr name="showBorderLine" format="boolean"/>
+        <attr name="borderLineWidth" format="dimension"/>
+        <attr name="borderLineColor" format="color"/>
+
+        <attr name="titleList" format="reference"/>
+        <attr name="titleHeight" format="dimension"/>
+        <attr name="titlePadding" format="dimension"/>
+        <attr name="showTitle" format="boolean"/>
+        <attr name="titleTextSize" format="dimension"/>
+        <!--<attr name="titleTextColor" format="color"/>-->
+        <attr name="titleTextShowStyle">
+            <flag name="bold" value="1"/>
+            <flag name="italic" value="2"/>
+        </attr>
+        <attr name="titleStyle">
+            <flag name="japan" value="1"/>
+            <flag name="english" value="2"/>
+        </attr>
+
+        <attr name="pageLRPadding" format="dimension"/>
+
+        <attr name="changePageVeRate" format="float"/>
+        <attr name="backToOriOffsetVeRate" format="float"/>
+
+        <attr name="minFlingVelocityRate" format="float"/>
+        <attr name="maxFlingVelocityRate" format="float"/>
+        <attr name="flingDecelerationRate" format="float"/>
+    </declare-styleable>
+</resources>

@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">RendererCalendar</string>
+
+    <string-array name="week_title">
+        <item>日</item>
+        <item>月</item>
+        <item>火</item>
+        <item>水</item>
+        <item>木</item>
+        <item>金</item>
+        <item>土</item>
+    </string-array>
+</resources>
