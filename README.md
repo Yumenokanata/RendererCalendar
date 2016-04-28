@@ -1,3 +1,5 @@
+[![](https://jitpack.io/v/Yumenokanata/RendererCalendar.svg)](https://jitpack.io/#Yumenokanata/RendererCalendar)
+
 # RendererCalendar
 通用、具有重用性、性能良好的Calendar控件  
 
@@ -27,7 +29,7 @@ allprojects {
 Step2: 在工程中添加依赖：
 ```groovy
 dependencies {
-    compile 'com.github.Yumenokanata:RendererCalendar:1.2.11'
+    compile 'com.github.Yumenokanata:RendererCalendar:x,y,z'
 }
 ```
 
