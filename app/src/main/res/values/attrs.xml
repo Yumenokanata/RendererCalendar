@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="CalendarViewAttr">
+    <declare-styleable name="CalendarView">
         <attr name="scrollable" format="boolean"/>
 
         <attr name="showBorderLine" format="boolean"/>
@@ -29,5 +30,11 @@
         <attr name="minFlingVelocityRate" format="float"/>
         <attr name="maxFlingVelocityRate" format="float"/>
         <attr name="flingDecelerationRate" format="float"/>
+
+        <attr name="android:padding"/>
+        <attr name="android:paddingLeft"/>
+        <attr name="android:paddingRight"/>
+        <attr name="android:paddingTop"/>
+        <attr name="android:paddingBottom"/>
     </declare-styleable>
 </resources>

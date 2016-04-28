@@ -34,7 +34,7 @@ public class CalendarView extends View {
     private static final String[] DEFAULT_JAP_TITLE = {"日", "月", "火", "水", "木", "金", "土"};
 
     private static final int MAX_CACHE_PAGE_COUNT = 3;
-    private static final long mPeriod = (long) (1000 / 40f);
+    private static final long mPeriod = (long) (1000 / 65f);
 
     private static final int BOLD_MASK = 0x1;
     private static final int ITALIC_MASK = 0x2;
@@ -127,33 +127,27 @@ public class CalendarView extends View {
     }
 
     private void initAttr(Context context, AttributeSet attrs){
-        int[] androidAttr = new int[]{android.R.attr.padding,
-                android.R.attr.paddingLeft,
-                android.R.attr.paddingRight,
-                android.R.attr.paddingTop,
-                android.R.attr.paddingBottom};
-        TypedArray tArray = context.obtainStyledAttributes(attrs, androidAttr);
-        int paddingValue = tArray.getDimensionPixelSize(0, 0);
-        int paddingLeft = tArray.getDimensionPixelSize(1, -1);
-        int paddingRight = tArray.getDimensionPixelSize(2, -1);
-        int paddingTop = tArray.getDimensionPixelSize(3, -1);
-        int paddingBottom = tArray.getDimensionPixelSize(4, -1);
+        TypedArray tArray = context.obtainStyledAttributes(attrs, R.styleable.CalendarView);
+
+        int paddingValue = tArray.getDimensionPixelSize(R.styleable.CalendarView_android_padding, 0);
+        int paddingLeft = tArray.getDimensionPixelSize(R.styleable.CalendarView_android_paddingLeft, -1);
+        int paddingRight = tArray.getDimensionPixelSize(R.styleable.CalendarView_android_paddingRight, -1);
+        int paddingTop = tArray.getDimensionPixelSize(R.styleable.CalendarView_android_paddingTop, -1);
+        int paddingBottom = tArray.getDimensionPixelSize(R.styleable.CalendarView_android_paddingBottom, -1);
         padding.set(paddingLeft != -1 ? paddingLeft : paddingValue,
                 paddingTop != -1 ? paddingTop : paddingValue,
                 paddingRight != -1 ? paddingRight : paddingValue,
                 paddingBottom != -1 ? paddingBottom : paddingValue);
-        tArray.recycle();
 
-        tArray = context.obtainStyledAttributes(attrs, R.styleable.CalendarViewAttr);
-        showBorder = tArray.getBoolean(R.styleable.CalendarViewAttr_showBorderLine, true);
-        borderWidth = tArray.getDimensionPixelSize(R.styleable.CalendarViewAttr_borderLineWidth, 2);
-        borderColor = tArray.getColor(R.styleable.CalendarViewAttr_borderLineColor, 0xffe6e6e6);
+        showBorder = tArray.getBoolean(R.styleable.CalendarView_showBorderLine, true);
+        borderWidth = tArray.getDimensionPixelSize(R.styleable.CalendarView_borderLineWidth, 2);
+        borderColor = tArray.getColor(R.styleable.CalendarView_borderLineColor, 0xffe6e6e6);
 
         CharSequence[] title_temp;
-        title_temp = tArray.getTextArray(R.styleable.CalendarViewAttr_titleList);
+        title_temp = tArray.getTextArray(R.styleable.CalendarView_titleList);
         if(title_temp == null) {
 //            title_temp = context.getResources().getStringArray(R.array.week_title);
-            if(tArray.getInt(R.styleable.CalendarViewAttr_titleStyle, 1) == 1)
+            if(tArray.getInt(R.styleable.CalendarView_titleStyle, 1) == 1)
                 titles = DEFAULT_JAP_TITLE;
             else
                 titles = DEFAULT_ENG_TITLE;
@@ -164,24 +158,24 @@ public class CalendarView extends View {
             titles = list.toArray(new String[list.size()]);
         }
 
-        showTitle = tArray.getBoolean(R.styleable.CalendarViewAttr_showTitle, true);
-        titleTextSize = tArray.getDimensionPixelSize(R.styleable.CalendarViewAttr_titleTextSize, -1);
-//        titleTextColor = tArray.getColor(R.styleable.CalendarViewAttr_titleTextColor, Color.BLACK);
-        textStyle = tArray.getInt(R.styleable.CalendarViewAttr_titleTextShowStyle, 0);
-        titlePadding = tArray.getDimensionPixelSize(R.styleable.CalendarViewAttr_titlePadding, -1);
-        pageLRPadding = tArray.getDimensionPixelSize(R.styleable.CalendarViewAttr_pageLRPadding, -1);
+        showTitle = tArray.getBoolean(R.styleable.CalendarView_showTitle, true);
+        titleTextSize = tArray.getDimensionPixelSize(R.styleable.CalendarView_titleTextSize, -1);
+//        titleTextColor = tArray.getColor(R.styleable.CalendarView_titleTextColor, Color.BLACK);
+        textStyle = tArray.getInt(R.styleable.CalendarView_titleTextShowStyle, 0);
+        titlePadding = tArray.getDimensionPixelSize(R.styleable.CalendarView_titlePadding, -1);
+        pageLRPadding = tArray.getDimensionPixelSize(R.styleable.CalendarView_pageLRPadding, -1);
 
-        titleHeight = tArray.getDimensionPixelSize(R.styleable.CalendarViewAttr_titleHeight, -1);
+        titleHeight = tArray.getDimensionPixelSize(R.styleable.CalendarView_titleHeight, -1);
 
-        mFlingScroll.setMinVeRate(tArray.getFloat(R.styleable.CalendarViewAttr_minFlingVelocityRate, 1));
-        mFlingScroll.setMaxVeRate(tArray.getFloat(R.styleable.CalendarViewAttr_maxFlingVelocityRate, 1));
-        mFlingScroll.setFlingDeRate(tArray.getFloat(R.styleable.CalendarViewAttr_flingDecelerationRate, 1));
+        mFlingScroll.setMinVeRate(tArray.getFloat(R.styleable.CalendarView_minFlingVelocityRate, 1));
+        mFlingScroll.setMaxVeRate(tArray.getFloat(R.styleable.CalendarView_maxFlingVelocityRate, 1));
+        mFlingScroll.setFlingDeRate(tArray.getFloat(R.styleable.CalendarView_flingDecelerationRate, 1));
         mFlingScroll.resetValue();
 
-        scrollable = tArray.getBoolean(R.styleable.CalendarViewAttr_scrollable, true);
+        scrollable = tArray.getBoolean(R.styleable.CalendarView_scrollable, true);
 
-        changePageVeRate = tArray.getFloat(R.styleable.CalendarViewAttr_changePageVeRate, 2.3f);
-        backToOriOffsetVeRate = tArray.getFloat(R.styleable.CalendarViewAttr_backToOriOffsetVeRate, 1);
+        changePageVeRate = tArray.getFloat(R.styleable.CalendarView_changePageVeRate, 2.3f);
+        backToOriOffsetVeRate = tArray.getFloat(R.styleable.CalendarView_backToOriOffsetVeRate, 1);
         mInertiaScroll.setInertiaMaxVeRate(backToOriOffsetVeRate);
         mInertiaScroll.resetValue();
 
@@ -201,16 +195,23 @@ public class CalendarView extends View {
 
         mGestureDetector = new GestureDetector(context, new GestureListener());
 
-        mTimer = new FrameTimerTask();
-        new Thread(mTimer).start();
-
         rendererBuilder.setDataChangedListener(mDataChangedListener);
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if(mTimer == null) {
+            mTimer = new FrameTimerTask();
+            new Thread(mTimer).start();
+        }
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         mTimer.stop();
+        mTimer = null;
     }
 
     class FrameTimerTask implements Runnable {
@@ -410,6 +411,20 @@ public class CalendarView extends View {
     }
 
     @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+
+        if(rendererBuilder != null && pageList.size() == 0)
+            initPageList();
+        else
+            for(int i = 0; i < pageList.size(); i++) {
+                PageData pd = pageList.get(i);
+                changePageSize(pageRect, pd);
+                resetPage(i, pd);
+            }
+    }
+
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         long time = System.currentTimeMillis();
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
@@ -426,7 +441,7 @@ public class CalendarView extends View {
 //        if(padding.left == 0 && padding.right == 0 && padding.top == 0 && padding.bottom == 0)
 //            padding.set(0, width / 30, 0, width / 30);
 
-        float pageWidth = width - padding.left + padding.right;
+        float pageWidth = width - padding.left - padding.right;
         float pageHeight = CalendarPage.onMeasureWidthWidth(pageWidth);
 
         if(showTitle) {
@@ -448,6 +463,12 @@ public class CalendarView extends View {
             if(titlePadding == -1)
 //                titlePadding = titleHeight / 5;
                 titlePadding = 0;
+        } else {
+            //默认情况下titlePadding为-1,而在不显示Title的时候需要对其进行处理
+
+//                titlePadding = titleHeight / 5;
+            titlePadding = 0;
+            titleTextHeight = 0;
         }
 
         if(pageLRPadding == -1)
@@ -476,15 +497,6 @@ public class CalendarView extends View {
                 titleRect.bottom + titlePadding,
                 titleRect.right,
                 titleRect.bottom + titlePadding + pageHeight);
-
-        if(rendererBuilder != null && pageList.size() == 0)
-            initPageList();
-        else
-            for(int i = 0; i < pageList.size(); i++) {
-                PageData pd = pageList.get(i);
-                changePageSize(pageRect, pd);
-                resetPage(i, pd);
-            }
 
         height = (int) calendarHeight;
 
@@ -533,10 +545,14 @@ public class CalendarView extends View {
         return pd;
     }
 
+//    long onDrawStartTime = System.currentTimeMillis();
     @Override
     protected void onDraw(Canvas canvas) {
-        for(PageData pd : pageList)
+//        System.out.println("offsetX= " + offsetX);
+        for(int i = 0; i < pageList.size(); i++) {
+            PageData pd = pageList.get(i);
             canvas.drawBitmap(pd.getBitmap(), null, pd.getPageRect(), null);
+        }
 
         if(showTitle){
             for(int i = 0; i < titles.length; i++) {
@@ -547,6 +563,9 @@ public class CalendarView extends View {
                         titlePaint);
             }
         }
+
+//        System.out.println("onDraw spend time: " + (System.currentTimeMillis() - onDrawStartTime));
+//        onDrawStartTime = System.currentTimeMillis();
     }
 
     @Override
