@@ -11,6 +11,7 @@
     tools:context="com.fenrir.app.sample.MainActivity">
 
     <indi.yume.tools.renderercalendar.CalendarView
+        android:id="@+id/calendar_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:showTitle="false"

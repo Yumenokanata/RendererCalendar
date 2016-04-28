@@ -25,6 +25,7 @@ import indi.yume.tools.renderercalendar.interpolator.TargetFlingInterpolator;
 import indi.yume.tools.renderercalendar.listener.OnDayClickListener;
 import indi.yume.tools.renderercalendar.listener.OnMonthChangedListener;
 import indi.yume.tools.renderercalendar.model.DayDate;
+import indi.yume.tools.renderercalendar.util.LogUtil;
 
 /**
  * Created by yume on 15/9/29.
@@ -100,6 +101,7 @@ public class CalendarView extends View {
     private Timer scrollDelayTimer;
 
     private OnDayClickListener mOnDayClickListener;
+    private OnDayClickListener mOnDayDoubleClickListener;
     private OnMonthChangedListener mOnMonthChangedListener;
 
     private boolean monthChanged = false;
@@ -236,7 +238,7 @@ public class CalendarView extends View {
 //                    System.out.println("Draw over; offsetX= " + offsetX);
                 } else if (monthChanged && offsetX == 0
                         && (onTouchMonth.getYear() != toMonth.getYear() || onTouchMonth.getMonth() != toMonth.getMonth())) {
-                    System.out.println("onMonthChangedOver");
+                    LogUtil.m("onMonthChangedOver");
                     if(mOnMonthChangedListener != null)
                         post(new Runnable() {
                             @Override
@@ -308,6 +310,10 @@ public class CalendarView extends View {
 
     public void setOnDayClickListener(OnDayClickListener mOnDayClickListener) {
         this.mOnDayClickListener = mOnDayClickListener;
+    }
+
+    public void setOnDayDoubleClickListener(OnDayClickListener onDayDoubleClickListener) {
+        this.mOnDayDoubleClickListener = onDayDoubleClickListener;
     }
 
     public void setOnMonthChangedListener(OnMonthChangedListener mOnMonthChangedListener) {
@@ -401,13 +407,29 @@ public class CalendarView extends View {
     }
 
     private void postOnDayClickListener(final PageData pd){
-        if(mOnDayClickListener != null)
+        if(mOnDayClickListener != null) {
+            final DayDate selectDayTemp = new DayDate(selectDay);
+            final boolean isInThisMonth = pd.getPage().inSameMonth(selectDayTemp);
             post(new Runnable() {
                 @Override
                 public void run() {
-                    mOnDayClickListener.onDayClick(selectDay, pd.getPage().inSameMonth(selectDay));
+                    mOnDayClickListener.onDayClick(selectDayTemp, isInThisMonth);
                 }
             });
+        }
+    }
+
+    private void postOnDayDoubleClickListener(final PageData pd){
+        if(mOnDayDoubleClickListener != null) {
+            final DayDate selectDayTemp = new DayDate(selectDay);
+            final boolean isInThisMonth = pd.getPage().inSameMonth(selectDayTemp);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    mOnDayDoubleClickListener.onDayClick(selectDayTemp, isInThisMonth);
+                }
+            });
+        }
     }
 
     @Override
@@ -502,7 +524,7 @@ public class CalendarView extends View {
 
         setMeasuredDimension(width, height);
 
-        System.out.println("onMeasure: " + (System.currentTimeMillis() - time));
+        LogUtil.m("onMeasure: " + (System.currentTimeMillis() - time));
     }
 
     private void initPageList(){
@@ -580,7 +602,7 @@ public class CalendarView extends View {
 
                 mInertiaScroll.stopScroll();
                 mFlingScroll.stopScroll();
-                System.out.println("Down");
+                LogUtil.m("Down");
                 break;
             case MotionEvent.ACTION_UP:
                 isTouching = false;
@@ -593,7 +615,7 @@ public class CalendarView extends View {
                     }
                 }, 200);
 
-                System.out.println("Up");
+                LogUtil.m("Up");
                 break;
         }
 
@@ -601,7 +623,7 @@ public class CalendarView extends View {
         return true;
     }
 
-    private class GestureListener implements GestureDetector.OnGestureListener {
+    private class GestureListener implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
 
         @Override
         public boolean onDown(MotionEvent e) {
@@ -615,30 +637,6 @@ public class CalendarView extends View {
 
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
-            if(offsetX != 0)
-                return true;
-
-            int index = MAX_CACHE_PAGE_COUNT / 2;
-            PageData pd = pageList.get(index);
-            float x = e.getX() - pageRect.left;
-            float y = e.getY() - pageRect.top;
-            if(pd.getPage().onSingleTapUp(x, y)) {
-                selectDay.setValue(pd.getPage().getSelectDay());
-                isSelected = true;
-
-                for(PageData pageData : pageList)
-                    if(pageData != pd)
-                        if (pageData.getPage().getSelectDay() != null) {
-                            pageData.getPage().setSelectDay(selectDay);
-                            pageData.getPage().renderAllDays(pageData.getCanvas());
-                        } else{
-                            pageData.getPage().setSelectDay(selectDay);
-                        }
-
-                pd.getPage().renderAllDays(pd.getCanvas());
-                postInvalidate();
-                postOnDayClickListener(pd);
-            }
             return true;
         }
 
@@ -674,6 +672,69 @@ public class CalendarView extends View {
             mFlingScroll.startScroll(velocityX, offset);
             if(scrollDelayTimer != null)
                 scrollDelayTimer.cancel();
+            return true;
+        }
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            if(offsetX != 0)
+                return true;
+
+            int index = MAX_CACHE_PAGE_COUNT / 2;
+            PageData pd = pageList.get(index);
+            float x = e.getX() - pageRect.left;
+            float y = e.getY() - pageRect.top;
+            if(pd.getPage().onSingleTapUp(x, y)) {
+                selectDay.setValue(pd.getPage().getSelectDay());
+                isSelected = true;
+
+                for(PageData pageData : pageList)
+                    if(pageData != pd)
+                        if (pageData.getPage().getSelectDay() != null) {
+                            pageData.getPage().setSelectDay(selectDay);
+                            pageData.getPage().renderAllDays(pageData.getCanvas());
+                        } else{
+                            pageData.getPage().setSelectDay(selectDay);
+                        }
+
+                pd.getPage().renderAllDays(pd.getCanvas());
+                postInvalidate();
+                postOnDayClickListener(pd);
+            }
+            return true;
+        }
+
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            if(offsetX != 0)
+                return true;
+
+            int index = MAX_CACHE_PAGE_COUNT / 2;
+            PageData pd = pageList.get(index);
+            float x = e.getX() - pageRect.left;
+            float y = e.getY() - pageRect.top;
+            if(pd.getPage().onSingleTapUp(x, y)) {
+                selectDay.setValue(pd.getPage().getSelectDay());
+                isSelected = true;
+
+                for(PageData pageData : pageList)
+                    if(pageData != pd)
+                        if (pageData.getPage().getSelectDay() != null) {
+                            pageData.getPage().setSelectDay(selectDay);
+                            pageData.getPage().renderAllDays(pageData.getCanvas());
+                        } else{
+                            pageData.getPage().setSelectDay(selectDay);
+                        }
+
+                pd.getPage().renderAllDays(pd.getCanvas());
+                postInvalidate();
+                postOnDayDoubleClickListener(pd);
+            }
+            return true;
+        }
+
+        @Override
+        public boolean onDoubleTapEvent(MotionEvent e) {
             return true;
         }
     }

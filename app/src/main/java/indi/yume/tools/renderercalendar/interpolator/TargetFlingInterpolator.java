@@ -1,5 +1,7 @@
 package indi.yume.tools.renderercalendar.interpolator;
 
+import indi.yume.tools.renderercalendar.util.LogUtil;
+
 /**
  * Created by yume on 15/11/10.
  */
@@ -97,7 +99,7 @@ public class TargetFlingInterpolator extends Interpolator {
         if(currentVelocityX - flingDeceleration * (mPeriod / 1000f) < 0){
             isOver = true;
             offset = direct * calculateS(-flingDeceleration, currentVelocityX, currentVelocityX / flingDeceleration);
-            System.out.println("offsetSum= " + offsetSum);
+            LogUtil.m("offsetSum= " + offsetSum);
         } else {
             offset = direct * calculateS(-flingDeceleration, currentVelocityX, mPeriod / 1000f);
         }
