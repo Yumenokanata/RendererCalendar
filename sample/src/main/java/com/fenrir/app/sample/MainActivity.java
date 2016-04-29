@@ -2,9 +2,9 @@ package com.fenrir.app.sample;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
 
 import indi.yume.tools.renderercalendar.CalendarView;
+import indi.yume.tools.renderercalendar.OnClickListener;
 import indi.yume.tools.renderercalendar.listener.OnDayClickListener;
 import indi.yume.tools.renderercalendar.model.DayDate;
 

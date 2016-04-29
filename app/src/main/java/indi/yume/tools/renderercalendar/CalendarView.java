@@ -116,6 +116,10 @@ public class CalendarView extends View {
 
     private boolean scrollable = true;
 
+    private DayDate willSelectDay = null;
+
+    private boolean refreshAllPage = false;
+
     public CalendarView(Context context) {
         super(context);
         init(context);
@@ -250,8 +254,26 @@ public class CalendarView extends View {
                     monthChanged = false;
                     postInvalidate();
 //                    System.out.println("Draw over; offsetX= " + offsetX);
-                } else {
+                } else if(willSelectDay != null) {
+                    selectDay.setValue(willSelectDay);
+                    isSelected = true;
+                    willSelectDay = null;
+                    for (PageData pageData : pageList)
+                        if (pageData.getPage().getSelectDay() != null) {
+                            pageData.getPage().setSelectDay(selectDay);
+                            pageData.getPage().renderAllDays(pageData.getCanvas());
+                        } else {
+                            pageData.getPage().setSelectDay(selectDay);
+                            if(pageData.getPage().getSelectDay() != null)
+                                pageData.getPage().renderAllDays(pageData.getCanvas());
+                        }
+                    postInvalidate();
 //                    System.out.println("Draw over; offsetX= " + offsetX);
+                } else if(refreshAllPage) {
+                    refreshAllPage = false;
+                    for (PageData pageData : pageList)
+                        pageData.getPage().renderAllDays(pageData.getCanvas());
+                    postInvalidate();
                 }
 
 //            if(mFlingScroll.isOver() && mInertiaScroll.isOver()) {
@@ -404,6 +426,28 @@ public class CalendarView extends View {
             }
         }
         postOnMonthChangedListener();
+    }
+
+    public void setSelectDay(DayDate selectDay) {
+        setSelectDay(selectDay, false);
+    }
+
+    public void setSelectDay(DayDate selectDay, boolean renderAllPage) {
+        isSelected = true;
+
+        if(renderAllPage) {
+            for (PageData pageData : pageList)
+                if (pageData.getPage().getSelectDay() != null) {
+                    pageData.getPage().setSelectDay(selectDay);
+                    pageData.getPage().renderAllDays(pageData.getCanvas());
+                } else {
+                    pageData.getPage().setSelectDay(selectDay);
+                }
+        } else {
+
+        }
+
+        postInvalidate();
     }
 
     private void postOnDayClickListener(final PageData pd){
@@ -567,7 +611,7 @@ public class CalendarView extends View {
         return pd;
     }
 
-//    long onDrawStartTime = System.currentTimeMillis();
+    long onDrawStartTime = System.currentTimeMillis();
     @Override
     protected void onDraw(Canvas canvas) {
 //        System.out.println("offsetX= " + offsetX);
@@ -586,8 +630,8 @@ public class CalendarView extends View {
             }
         }
 
-//        System.out.println("onDraw spend time: " + (System.currentTimeMillis() - onDrawStartTime));
-//        onDrawStartTime = System.currentTimeMillis();
+        LogUtil.m("onDraw spend time: " + (System.currentTimeMillis() - onDrawStartTime));
+        onDrawStartTime = System.currentTimeMillis();
     }
 
     @Override
@@ -685,20 +729,8 @@ public class CalendarView extends View {
             float x = e.getX() - pageRect.left;
             float y = e.getY() - pageRect.top;
             if(pd.getPage().onSingleTapUp(x, y)) {
-                selectDay.setValue(pd.getPage().getSelectDay());
-                isSelected = true;
+                renderOnlySelectDay(pd.getPage().getSelectDay());
 
-                for(PageData pageData : pageList)
-                    if(pageData != pd)
-                        if (pageData.getPage().getSelectDay() != null) {
-                            pageData.getPage().setSelectDay(selectDay);
-                            pageData.getPage().renderAllDays(pageData.getCanvas());
-                        } else{
-                            pageData.getPage().setSelectDay(selectDay);
-                        }
-
-                pd.getPage().renderAllDays(pd.getCanvas());
-                postInvalidate();
                 postOnDayClickListener(pd);
             }
             return true;
@@ -714,20 +746,8 @@ public class CalendarView extends View {
             float x = e.getX() - pageRect.left;
             float y = e.getY() - pageRect.top;
             if(pd.getPage().onSingleTapUp(x, y)) {
-                selectDay.setValue(pd.getPage().getSelectDay());
-                isSelected = true;
+                renderOnlySelectDay(pd.getPage().getSelectDay());
 
-                for(PageData pageData : pageList)
-                    if(pageData != pd)
-                        if (pageData.getPage().getSelectDay() != null) {
-                            pageData.getPage().setSelectDay(selectDay);
-                            pageData.getPage().renderAllDays(pageData.getCanvas());
-                        } else{
-                            pageData.getPage().setSelectDay(selectDay);
-                        }
-
-                pd.getPage().renderAllDays(pd.getCanvas());
-                postInvalidate();
                 postOnDayDoubleClickListener(pd);
             }
             return true;
@@ -737,6 +757,36 @@ public class CalendarView extends View {
         public boolean onDoubleTapEvent(MotionEvent e) {
             return true;
         }
+    }
+
+    void renderAllPage() {
+        refreshAllPage = true;
+    }
+
+    void renderOnlySelectPage(DayDate selectDay) {
+        willSelectDay = selectDay;
+    }
+
+    void renderOnlySelectDay(DayDate willSelectDay) {
+        DayDate oldSelectDay = new DayDate(selectDay);
+        selectDay.setValue(willSelectDay);
+        isSelected = true;
+
+        for(PageData pageData : pageList) {
+            CalendarPage calendarPage = pageData.getPage();
+            if(calendarPage.getSelectDay() != null) {
+                calendarPage.setSelectDay(willSelectDay);
+                if(calendarPage.inSameMonth(oldSelectDay))
+                    calendarPage.renderDay(pageData.getCanvas(), oldSelectDay);
+            } else {
+                calendarPage.setSelectDay(willSelectDay);
+            }
+
+            if(calendarPage.inSameMonth(willSelectDay))
+                calendarPage.renderDay(pageData.getCanvas(), willSelectDay);
+        }
+
+        postInvalidate();
     }
 
     private void calculatePage(){

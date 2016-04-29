@@ -6,9 +6,12 @@ import android.support.annotation.Nullable;
 import java.util.Calendar;
 import java.util.Date;
 
+import lombok.EqualsAndHashCode;
+
 /**
  * Created by yume on 15/10/8.
  */
+@EqualsAndHashCode(exclude = {"calendar"})
 public class DayDate {
     private static final int[] mouth_calculate = {2, 5, 5, 1, 3, 6, 1, 4, 0, 2, 5, 0};
     private static final int[] mouth_sum_num = {31,28,31,30,31,30,31,31,30,31,30,31};
@@ -171,16 +174,5 @@ public class DayDate {
     @Override
     public String toString() {
         return String.format("%04d/%02d/%02d", year, month + 1, day);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if(!(o instanceof DayDate))
-            return false;
-        DayDate d = (DayDate) o;
-
-        return d.getYear() == year
-                && d.getMonth() == month
-                && d.getDay() == day;
     }
 }
