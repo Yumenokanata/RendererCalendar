@@ -7,6 +7,7 @@ import indi.yume.tools.renderercalendar.CalendarView;
 import indi.yume.tools.renderercalendar.listener.GestureListener;
 import indi.yume.tools.renderercalendar.listener.OnDayClickListener;
 import indi.yume.tools.renderercalendar.model.DayDate;
+import indi.yume.tools.renderercalendar.util.ScrollMode;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
         if(calendarView == null)
             return;
 
+        calendarView.setScrollMode(ScrollMode.SINGLE_PAGE);
         calendarView.setOnDayClickListener(new GestureListener() {
             @Override
             public boolean onClick(int currentYear, int currentMonth, DayDate date, boolean isInThisMonth) {

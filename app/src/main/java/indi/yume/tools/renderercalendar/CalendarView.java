@@ -28,6 +28,7 @@ import indi.yume.tools.renderercalendar.listener.OnMonthChangedListener;
 import indi.yume.tools.renderercalendar.model.DayDate;
 import indi.yume.tools.renderercalendar.util.LogUtil;
 import indi.yume.tools.renderercalendar.util.RenderMode;
+import indi.yume.tools.renderercalendar.util.ScrollMode;
 
 /**
  * Created by yume on 15/9/29.
@@ -102,7 +103,11 @@ public class CalendarView extends View {
     private FrameTimerTask mTimer;
     private Timer scrollDelayTimer;
 
+    @RenderMode
     private int renderMode = RenderMode.RENDER_MODE_ONLY_DAY;
+
+    @ScrollMode
+    private int scrollMode = ScrollMode.MULTIPLE_PAGE;
 
     private GestureListener gestureListener;
 
@@ -718,7 +723,14 @@ public class CalendarView extends View {
 
             int pageWidth = (int) (pageLRPadding + pageRect.width());
             float defaultOffset = mFlingScroll.calculateDefaultTargetOffset(velocityX);
-            float offset = (Math.round((defaultOffset + offsetX) / pageWidth)) * pageWidth - offsetX;
+
+            int jumpPageNum = Math.round((defaultOffset + offsetX) / pageWidth);
+            float offset;
+            if(scrollMode == ScrollMode.MULTIPLE_PAGE) {
+                offset = jumpPageNum * pageWidth - offsetX;
+            } else {
+                offset = Math.min(1, Math.abs(jumpPageNum)) * Math.signum(jumpPageNum) * pageWidth - offsetX;
+            }
 
             mFlingScroll.startScroll(velocityX, offset);
             if(scrollDelayTimer != null)
@@ -780,6 +792,10 @@ public class CalendarView extends View {
 
     public void setRenderMode(@RenderMode int renderMode) {
         this.renderMode = renderMode;
+    }
+
+    public void setScrollMode(@ScrollMode int scrollMode) {
+        this.scrollMode = scrollMode;
     }
 
     void renderOnSelectDayChanged(DayDate willSelectDay) {
