@@ -215,6 +215,14 @@ public class CalendarPage {
         }
     }
 
+    public DayDate getTouchDay(float x, float y) {
+        for(CanvasData cd : dayCanvasList)
+            if(cd.getRect().contains(x, y)) {
+                return cd.getDate();
+            }
+        return null;
+    }
+
     public boolean onSingleTapUp(float x, float y){
         for(CanvasData cd : dayCanvasList)
             if(cd.getRect().contains(x, y)) {

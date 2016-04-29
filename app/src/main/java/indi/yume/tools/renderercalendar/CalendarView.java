@@ -22,10 +22,12 @@ import indi.yume.tools.renderercalendar.adapter.BaseDayRendererBuilder;
 import indi.yume.tools.renderercalendar.adapter.DefaultRendererBuilder;
 import indi.yume.tools.renderercalendar.interpolator.InertiaScrollInterpolator;
 import indi.yume.tools.renderercalendar.interpolator.TargetFlingInterpolator;
+import indi.yume.tools.renderercalendar.listener.GestureListener;
 import indi.yume.tools.renderercalendar.listener.OnDayClickListener;
 import indi.yume.tools.renderercalendar.listener.OnMonthChangedListener;
 import indi.yume.tools.renderercalendar.model.DayDate;
 import indi.yume.tools.renderercalendar.util.LogUtil;
+import indi.yume.tools.renderercalendar.util.RenderMode;
 
 /**
  * Created by yume on 15/9/29.
@@ -73,8 +75,8 @@ public class CalendarView extends View {
     //    private int titleTextColor;
     private String[] titles;
 
-    private float changePageVeRate;
-    private float backToOriOffsetVeRate;
+    private float changePageVeRate = 4f;
+    private float backToOriOffsetVeRate = 1;
 
     private RectF titleCellRect = new RectF();
     private float titleTextHeight;
@@ -100,8 +102,10 @@ public class CalendarView extends View {
     private FrameTimerTask mTimer;
     private Timer scrollDelayTimer;
 
-    private OnDayClickListener mOnDayClickListener;
-    private OnDayClickListener mOnDayDoubleClickListener;
+    private int renderMode = RenderMode.RENDER_MODE_ONLY_DAY;
+
+    private GestureListener gestureListener;
+
     private OnMonthChangedListener mOnMonthChangedListener;
 
     private boolean monthChanged = false;
@@ -180,8 +184,8 @@ public class CalendarView extends View {
 
         scrollable = tArray.getBoolean(R.styleable.CalendarView_scrollable, true);
 
-        changePageVeRate = tArray.getFloat(R.styleable.CalendarView_changePageVeRate, 2.3f);
-        backToOriOffsetVeRate = tArray.getFloat(R.styleable.CalendarView_backToOriOffsetVeRate, 1);
+        changePageVeRate = tArray.getFloat(R.styleable.CalendarView_changePageVeRate, changePageVeRate);
+        backToOriOffsetVeRate = tArray.getFloat(R.styleable.CalendarView_backToOriOffsetVeRate, backToOriOffsetVeRate);
         mInertiaScroll.setInertiaMaxVeRate(backToOriOffsetVeRate);
         mInertiaScroll.resetValue();
 
@@ -199,7 +203,7 @@ public class CalendarView extends View {
         if((textStyle & ITALIC_MASK) != 0)
             titlePaint.setTextSkewX(-0.5f);
 
-        mGestureDetector = new GestureDetector(context, new GestureListener());
+        mGestureDetector = new GestureDetector(context, new GestureDetectorListener());
 
         rendererBuilder.setDataChangedListener(mDataChangedListener);
     }
@@ -330,12 +334,8 @@ public class CalendarView extends View {
         this.minDay = minDay;
     }
 
-    public void setOnDayClickListener(OnDayClickListener mOnDayClickListener) {
-        this.mOnDayClickListener = mOnDayClickListener;
-    }
-
-    public void setOnDayDoubleClickListener(OnDayClickListener onDayDoubleClickListener) {
-        this.mOnDayDoubleClickListener = onDayDoubleClickListener;
+    public void setOnDayClickListener(GestureListener gestureListener) {
+        this.gestureListener = gestureListener;
     }
 
     public void setOnMonthChangedListener(OnMonthChangedListener mOnMonthChangedListener) {
@@ -414,16 +414,23 @@ public class CalendarView extends View {
                 pd.getPage().setSelectDay(selectDay);
                 pd.getPage().renderAllDays(pd.getCanvas());
                 postInvalidate();
-                postOnDayClickListener(pd);
-            } else{
-                if(mOnDayClickListener != null)
-                    post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mOnDayClickListener.onDayClick(selectDay, true);
-                        }
-                    });
+
+                DayDate currentDate = pd.getPage().getMonth();
+                int year = currentDate.getYear();
+                int month = currentDate.getMonth();
+
+                if(gestureListener != null)
+                    gestureListener.onSelect(year, month, new DayDate(selectDay), pd.getPage().inSameMonth(selectDay));
             }
+//            } else{
+//                if(mOnDayClickListener != null)
+//                    post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            mOnDayClickListener.onDayClick(selectDay, true);
+//                        }
+//                    });
+//            }
         }
         postOnMonthChangedListener();
     }
@@ -450,31 +457,31 @@ public class CalendarView extends View {
         postInvalidate();
     }
 
-    private void postOnDayClickListener(final PageData pd){
-        if(mOnDayClickListener != null) {
-            final DayDate selectDayTemp = new DayDate(selectDay);
-            final boolean isInThisMonth = pd.getPage().inSameMonth(selectDayTemp);
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    mOnDayClickListener.onDayClick(selectDayTemp, isInThisMonth);
-                }
-            });
-        }
-    }
-
-    private void postOnDayDoubleClickListener(final PageData pd){
-        if(mOnDayDoubleClickListener != null) {
-            final DayDate selectDayTemp = new DayDate(selectDay);
-            final boolean isInThisMonth = pd.getPage().inSameMonth(selectDayTemp);
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    mOnDayDoubleClickListener.onDayClick(selectDayTemp, isInThisMonth);
-                }
-            });
-        }
-    }
+//    private void postOnDayClickListener(final PageData pd){
+//        if(mOnDayClickListener != null) {
+//            final DayDate selectDayTemp = new DayDate(selectDay);
+//            final boolean isInThisMonth = pd.getPage().inSameMonth(selectDayTemp);
+//            post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    mOnDayClickListener.onDayClick(selectDayTemp, isInThisMonth);
+//                }
+//            });
+//        }
+//    }
+//
+//    private void postOnDayDoubleClickListener(final PageData pd){
+//        if(mOnDayDoubleClickListener != null) {
+//            final DayDate selectDayTemp = new DayDate(selectDay);
+//            final boolean isInThisMonth = pd.getPage().inSameMonth(selectDayTemp);
+//            post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    mOnDayDoubleClickListener.onDayClick(selectDayTemp, isInThisMonth);
+//                }
+//            });
+//        }
+//    }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
@@ -667,7 +674,7 @@ public class CalendarView extends View {
         return true;
     }
 
-    private class GestureListener implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
+    private class GestureDetectorListener implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
 
         @Override
         public boolean onDown(MotionEvent e) {
@@ -728,10 +735,16 @@ public class CalendarView extends View {
             PageData pd = pageList.get(index);
             float x = e.getX() - pageRect.left;
             float y = e.getY() - pageRect.top;
-            if(pd.getPage().onSingleTapUp(x, y)) {
-                renderOnlySelectDay(pd.getPage().getSelectDay());
+            DayDate currentDate = pd.getPage().getMonth();
+            int year = currentDate.getYear();
+            int month = currentDate.getMonth();
 
-                postOnDayClickListener(pd);
+            DayDate touchDay = pd.getPage().getTouchDay(x, y);
+            if(gestureListener == null || gestureListener.onClick(year, month, touchDay, pd.getPage().inSameMonth(touchDay))) {
+                renderOnSelectDayChanged(touchDay);
+
+                if(gestureListener != null)
+                    gestureListener.onSelect(year, month, touchDay, pd.getPage().inSameMonth(touchDay));
             }
             return true;
         }
@@ -745,10 +758,16 @@ public class CalendarView extends View {
             PageData pd = pageList.get(index);
             float x = e.getX() - pageRect.left;
             float y = e.getY() - pageRect.top;
-            if(pd.getPage().onSingleTapUp(x, y)) {
-                renderOnlySelectDay(pd.getPage().getSelectDay());
+            DayDate currentDate = pd.getPage().getMonth();
+            int year = currentDate.getYear();
+            int month = currentDate.getMonth();
 
-                postOnDayDoubleClickListener(pd);
+            DayDate touchDay = pd.getPage().getTouchDay(x, y);
+            if(gestureListener == null || gestureListener.onDoubleClick(year, month, touchDay, pd.getPage().inSameMonth(touchDay))) {
+                renderOnSelectDayChanged(touchDay);
+
+                if(gestureListener != null)
+                    gestureListener.onSelect(year, month, touchDay, pd.getPage().inSameMonth(touchDay));
             }
             return true;
         }
@@ -759,12 +778,36 @@ public class CalendarView extends View {
         }
     }
 
-    void renderAllPage() {
+    public void setRenderMode(@RenderMode int renderMode) {
+        this.renderMode = renderMode;
+    }
+
+    void renderOnSelectDayChanged(DayDate willSelectDay) {
+        switch (renderMode) {
+            case RenderMode.RENDER_MODE_ONLY_DAY:
+                renderOnlySelectDay(willSelectDay);
+                break;
+            case RenderMode.RENDER_MODE_ONLY_MONTH:
+                renderOnlySelectPage(willSelectDay);
+                break;
+            case RenderMode.RENDER_MODE_ALL_PAGE:
+                renderAllPage(willSelectDay);
+                break;
+        }
+    }
+
+    void renderAllPage(DayDate willSelectDay) {
+        selectDay.setValue(willSelectDay);
+        isSelected = true;
+
+        for (PageData pageData : pageList)
+            pageData.getPage().setSelectDay(selectDay);
+
         refreshAllPage = true;
     }
 
-    void renderOnlySelectPage(DayDate selectDay) {
-        willSelectDay = selectDay;
+    void renderOnlySelectPage(DayDate willSelectDay) {
+        this.willSelectDay = willSelectDay;
     }
 
     void renderOnlySelectDay(DayDate willSelectDay) {
