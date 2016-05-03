@@ -77,9 +77,19 @@ public abstract class BaseDayRendererBuilder<T> {
         return null;
     }
 
-    public void notifyDataHasChanged(){
+    public void notifyThisPageDataHasChanged(){
         if(mDataChangedListener != null)
-            mDataChangedListener.refresh();
+            mDataChangedListener.refreshThisPage();
+    }
+
+    public void notifyAllPageDataHasChanged(){
+        if(mDataChangedListener != null)
+            mDataChangedListener.refreshAllPage();
+    }
+
+    public void notifyDataHasChanged(DayDate dayDate){
+        if(mDataChangedListener != null)
+            mDataChangedListener.refresh(dayDate);
     }
 
     protected abstract int getTypeClassIndex(T content, boolean isInThisMonth);
@@ -88,6 +98,8 @@ public abstract class BaseDayRendererBuilder<T> {
     protected abstract T getContent(DayDate date, boolean isInThisMonth);
 
     public static interface DataChangedListener{
-        void refresh();
+        void refreshThisPage();
+        void refreshAllPage();
+        void refresh(DayDate dayDate);
     }
 }

@@ -27,9 +27,8 @@ public abstract class Simple2RendererBuilder<R, T> extends BaseDayRendererBuilde
             list = new ArrayList<>();
         for(R t : list)
             map.put(
-                    dateKey(
-                            convertor.toDateString(t)), toTargetData.convertData(t));
-        notifyDataHasChanged();
+                    dateKey(convertor.toDateString(t)),
+                    toTargetData.convertData(t));
     }
 
     @Override

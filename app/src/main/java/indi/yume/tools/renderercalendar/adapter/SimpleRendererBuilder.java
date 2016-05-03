@@ -19,8 +19,8 @@ public abstract class SimpleRendererBuilder<T> extends BaseDayRendererBuilder<T>
     public void resetContent(List<T> list, ToDateConvertor<T> convertor){
         for(T t : list)
             map.put(
-                    dateKey(
-                            convertor.toDateString(t)), t);
+                    dateKey(convertor.toDateString(t)),
+                    t);
     }
 
     @Override

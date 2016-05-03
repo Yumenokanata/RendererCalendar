@@ -23,7 +23,6 @@ import indi.yume.tools.renderercalendar.adapter.DefaultRendererBuilder;
 import indi.yume.tools.renderercalendar.interpolator.InertiaScrollInterpolator;
 import indi.yume.tools.renderercalendar.interpolator.TargetFlingInterpolator;
 import indi.yume.tools.renderercalendar.listener.GestureListener;
-import indi.yume.tools.renderercalendar.listener.OnDayClickListener;
 import indi.yume.tools.renderercalendar.listener.OnMonthChangedListener;
 import indi.yume.tools.renderercalendar.model.DayDate;
 import indi.yume.tools.renderercalendar.util.LogUtil;
@@ -116,12 +115,25 @@ public class CalendarView extends View {
     private boolean monthChanged = false;
 
     private BaseDayRendererBuilder.DataChangedListener mDataChangedListener = new BaseDayRendererBuilder.DataChangedListener() {
+
         @Override
-        public void refresh() {
-            dataChangedRefresh = true;
+        public void refreshThisPage() {
+            dataChangedRefreshCurrentPage = true;
+        }
+
+        @Override
+        public void refreshAllPage() {
+            dataChangedRefreshAll = true;
+        }
+
+        @Override
+        public void refresh(DayDate dayDate) {
+            dataChangedDayDate = dayDate;
         }
     };
-    private boolean dataChangedRefresh = false;
+    private boolean dataChangedRefreshCurrentPage = false;
+    private boolean dataChangedRefreshAll = false;
+    private DayDate dataChangedDayDate = null;
 
     private boolean scrollable = true;
 
@@ -244,11 +256,19 @@ public class CalendarView extends View {
                 updateStatus();
                 if (isDrawing()) {
                     postInvalidate();
-                } else if (dataChangedRefresh) {
+                } else if (dataChangedRefreshCurrentPage) {
                     redrawCurrentPage();
                     postInvalidate();
-                    dataChangedRefresh = false;
+                    dataChangedRefreshCurrentPage = false;
 //                    System.out.println("Draw over; offsetX= " + offsetX);
+                } else if(dataChangedRefreshAll) {
+                    redrawAllPage();
+                    postInvalidate();
+                    dataChangedRefreshAll = false;
+                } else if(dataChangedDayDate != null) {
+                    redrawDay(dataChangedDayDate);
+                    postInvalidate();
+                    dataChangedDayDate = null;
                 } else if (monthChanged && offsetX == 0
                         && (onTouchMonth.getYear() != toMonth.getYear() || onTouchMonth.getMonth() != toMonth.getMonth())) {
                     LogUtil.m("onMonthChangedOver");
@@ -913,13 +933,19 @@ public class CalendarView extends View {
         page.getPage().renderAllDays(page.getCanvas());
     }
 
-    private void redrawCurrentPage(){
+    public void redrawCurrentPage(){
         redrawPage(pageList.get(MAX_CACHE_PAGE_COUNT / 2));
     }
 
-    private void redrawAllPage(){
+    public void redrawAllPage(){
         for(PageData pd : pageList)
             redrawPage(pd);
+    }
+
+    public void redrawDay(DayDate dayDate) {
+        for(PageData pd : pageList)
+            if(pd.getPage().inSameMonth(dayDate))
+                pd.getPage().renderDay(pd.getCanvas(), dayDate);
     }
 
     private void redrawPage(PageData page){
