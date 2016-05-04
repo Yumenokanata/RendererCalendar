@@ -1,6 +1,7 @@
 package indi.yume.tools.renderercalendar.model;
 
 import android.support.annotation.IntRange;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.Calendar;
@@ -12,7 +13,7 @@ import lombok.EqualsAndHashCode;
  * Created by yume on 15/10/8.
  */
 @EqualsAndHashCode(exclude = {"calendar"})
-public class DayDate {
+public class DayDate implements Comparable<DayDate> {
     private static final int[] mouth_calculate = {2, 5, 5, 1, 3, 6, 1, 4, 0, 2, 5, 0};
     private static final int[] mouth_sum_num = {31,28,31,30,31,30,31,31,30,31,30,31};
 
@@ -174,5 +175,35 @@ public class DayDate {
     @Override
     public String toString() {
         return String.format("%04d/%02d/%02d", year, month + 1, day);
+    }
+
+    @Override
+    public int compareTo(@Nullable DayDate another) {
+        if(another == null)
+            return 1;
+
+        return compare(this, another);
+    }
+
+    public static int compare(@NonNull DayDate lhs, @NonNull DayDate rhs) {
+        if(lhs.year < rhs.year) {
+            return -1;
+        } else if(lhs.year > rhs.year) {
+            return 1;
+        }
+
+        if(lhs.month < rhs.month) {
+            return -1;
+        } else if(lhs.month > rhs.month) {
+            return 1;
+        }
+
+        if(lhs.day < rhs.day) {
+            return -1;
+        } else if(lhs.day > rhs.day) {
+            return 1;
+        }
+
+        return 0;
     }
 }
