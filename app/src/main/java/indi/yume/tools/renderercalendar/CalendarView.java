@@ -253,6 +253,15 @@ public class CalendarView extends View {
             long periodTime = System.currentTimeMillis();
 
             while (isRun) {
+                if(!isAttachedToWindow()) {
+                    try {
+                        Thread.sleep(mPeriod);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    continue;
+                }
+
                 updateStatus();
                 if (isDrawing()) {
                     postInvalidate();
@@ -328,6 +337,10 @@ public class CalendarView extends View {
         return isTouching || !mFlingScroll.isOver() || !mInertiaScroll.isOver();
     }
 
+    private boolean floatEqualsZero(float value) {
+        return Math.abs(value) < 0.01;
+    }
+
     private void updateStatus(){
         if(!mFlingScroll.isOver()){
             offsetX += mFlingScroll.scroll();
@@ -341,10 +354,12 @@ public class CalendarView extends View {
 
             calculatePage();
         }
+        if(floatEqualsZero(offsetX))
+            offsetX = 0;
     }
 
     private void backOriginOffset(){
-        if(offsetX != 0){
+        if(!floatEqualsZero(offsetX)){
             int pageWidth = (int) (pageLRPadding + pageRect.width());
             mInertiaScroll.resetValue();
             if(Math.abs(offsetX) > pageWidth / 2){
@@ -392,7 +407,7 @@ public class CalendarView extends View {
     }
 
     public void moveToNextMonth(){
-        if(offsetX != 0)
+        if(!floatEqualsZero(offsetX))
             return;
 
         int pageWidth = (int) (pageLRPadding + pageRect.width());
@@ -405,7 +420,7 @@ public class CalendarView extends View {
     }
 
     public void moveToBackMonth(){
-        if(offsetX != 0)
+        if(!floatEqualsZero(offsetX))
             return;
 
         int pageWidth = (int) (pageLRPadding + pageRect.width());
@@ -418,7 +433,7 @@ public class CalendarView extends View {
     }
 
     public void jumpToDay(DayDate targetDay, boolean select){
-        if(offsetX != 0)
+        if(!floatEqualsZero(offsetX))
             return;
         monthChanged = true;
 
@@ -760,7 +775,7 @@ public class CalendarView extends View {
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
-            if(offsetX != 0)
+            if(!floatEqualsZero(offsetX))
                 return true;
 
             int index = MAX_CACHE_PAGE_COUNT / 2;
@@ -786,7 +801,7 @@ public class CalendarView extends View {
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {
-            if(offsetX != 0)
+            if(!floatEqualsZero(offsetX))
                 return true;
 
             int index = MAX_CACHE_PAGE_COUNT / 2;
@@ -888,7 +903,7 @@ public class CalendarView extends View {
         while(offsetX <= -pageWidth || offsetX >= pageWidth){
             if(offsetX <= -pageWidth){
                 offsetX += pageWidth;
-                if(Math.abs(offsetX - 0) < 1)
+                if(floatEqualsZero(offsetX))
                     offsetX = 0;
                 toMonth.addMonth(1);
 
@@ -902,7 +917,7 @@ public class CalendarView extends View {
 
             if(offsetX >= pageWidth){
                 offsetX -= pageWidth;
-                if(Math.abs(offsetX - 0) < 1)
+                if(floatEqualsZero(offsetX))
                     offsetX = 0;
                 toMonth.addMonth(-1);
 
