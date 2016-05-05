@@ -772,6 +772,9 @@ public class CalendarView extends View {
             int month = currentDate.getMonth();
 
             DayDate touchDay = pd.getPage().getTouchDay(x, y);
+            if(touchDay == null)
+                return true;
+
             if(gestureListener == null || gestureListener.onClick(year, month, touchDay, pd.getPage().inSameMonth(touchDay))) {
                 renderOnSelectDayChanged(touchDay);
 
@@ -795,6 +798,9 @@ public class CalendarView extends View {
             int month = currentDate.getMonth();
 
             DayDate touchDay = pd.getPage().getTouchDay(x, y);
+            if(touchDay == null)
+                return true;
+
             if(gestureListener == null || gestureListener.onDoubleClick(year, month, touchDay, pd.getPage().inSameMonth(touchDay))) {
                 renderOnSelectDayChanged(touchDay);
 
