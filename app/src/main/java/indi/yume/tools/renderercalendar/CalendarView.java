@@ -239,6 +239,7 @@ public class CalendarView extends View {
         super.onDetachedFromWindow();
         mTimer.stop();
         mTimer = null;
+        isTouching = false;
     }
 
     class FrameTimerTask implements Runnable {
@@ -253,15 +254,6 @@ public class CalendarView extends View {
             long periodTime = System.currentTimeMillis();
 
             while (isRun) {
-                if(!isAttachedToWindow()) {
-                    try {
-                        Thread.sleep(mPeriod);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    continue;
-                }
-
                 updateStatus();
                 if (isDrawing()) {
                     postInvalidate();
@@ -295,7 +287,6 @@ public class CalendarView extends View {
                 } else if(willSelectDay != null) {
                     selectDay.setValue(willSelectDay);
                     isSelected = true;
-                    willSelectDay = null;
                     for (PageData pageData : pageList)
                         if (pageData.getPage().getSelectDay() != null) {
                             pageData.getPage().setSelectDay(selectDay);
@@ -306,12 +297,13 @@ public class CalendarView extends View {
                                 pageData.getPage().renderAllDays(pageData.getCanvas());
                         }
                     postInvalidate();
+                    willSelectDay = null;
 //                    System.out.println("Draw over; offsetX= " + offsetX);
                 } else if(refreshAllPage) {
-                    refreshAllPage = false;
                     for (PageData pageData : pageList)
                         pageData.getPage().renderAllDays(pageData.getCanvas());
                     postInvalidate();
+                    refreshAllPage = false;
                 }
 
 //            if(mFlingScroll.isOver() && mInertiaScroll.isOver()) {
@@ -683,6 +675,7 @@ public class CalendarView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        LogUtil.m("onTouchEvent", event.toString());
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
                 isTouching = true;
